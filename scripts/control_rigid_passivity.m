@@ -1,15 +1,15 @@
-function tau_m = control_rigid_passivity(robot, state, state_des, tau_ext)
+function tau_m = control_rigid_passivity(robot, x, x_des)
 
 n = robot.rtb.n;
-Kp = diag([100, 100, 100, 100, 100, 100]);
+Kp = diag([500, 500, 500, 500, 500, 500]);
 Kd = diag([20, 20, 20, 20, 20, 20]);
-Lambda = diag([1, 1, 1, 1, 1, 1]);
+Lambda = diag([10, 10, 10, 10, 10, 10]);
 
-q = state.q;
-q_dot = state.q_dot;
-q_des = state_des.q;
-q_dot_des = state_des.q_dot;
-q_ddot_des = state_des.q_ddot;
+q = x(1:n);
+q_dot = x(n+1:2*n);
+q_des = x_des(1:n);
+q_dot_des = x_des(n+1:2*n);
+q_ddot_des = x_des(2*n+1:3*n);
 
 % inverse dynamics
 M = robot.rtb.inertia(q');

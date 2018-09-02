@@ -1,4 +1,4 @@
-function [state] = fdyn(robot, state, tau_m, tau_ext)
+function [x] = fdyn(robot, t, x)
 
 n = robot.rtb.n;
 dt = robot.dt;
@@ -16,36 +16,37 @@ elseif strcmp(robot.model, 'flexible')
 end
 
 % state
-q = state.q;
-q_dot = state.q_dot;
+q = x(1:n);
+q_dot = x(n+1:2*n);
 if strcmp(robot.model, 'flexible')
-    theta = state.theta;
-    theta_dot = state.theta_dot;
+    theta = x(2*n+1:3*n);
+    theta_dot = x(3*n+1:4*n);
 end
+
+% trajectory
+x_des = robot.traj(robot,t);
 
 % actuator torque
 if strcmp(robot.model, 'rigid')
-    tau_a = tau_m;
+    tau_a = robot.control(robot, x, x_des);
 elseif strcmp(robot.model, 'flexible')
     tau_a = K*(theta - q) + D*(theta_dot - q_dot);
 end
+tau_ext = robot.tau_ext;
 
 % link dynamics
 q_ddot = accel(robot.rtb, q', q_dot', tau_a' + tau_ext' );
-q_dot = q_dot + q_ddot*dt;
-q = q + q_dot*dt;
 
 % motor dynamics
 if strcmp(robot.model, 'flexible')
+    tau_m = robot.control(robot, x, x_des);
     theta_ddot = inv(G*G*B)*(-tau_a + tau_m);
-    theta_dot = theta_dot + theta_dot*dt;
-    theta = theta + theta_dot*dt;
 end
 
 % output
-state.q_dot = q_dot;
-state.q = q;
+x(1:n) = q_dot;
+x(n+1:2*n) = q_ddot;
 if strcmp(robot.model, 'flexible')
-    state.theta_dot = theta_dot;
-    state.theta = theta;
+    x(2*n+1: 3*n) = theta_dot;
+    x(3*n+1: 4*n) = theta_ddot;
 end

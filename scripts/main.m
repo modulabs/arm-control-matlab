@@ -5,8 +5,10 @@ close all;
 %% modeling
 mdl_puma560;
 robot.rtb = p560;
+% joint model: select between 'rigid' and 'joint'
 robot.model = 'rigid';
 % robot.model = 'flexible';
+% space : select 'joint' and 'task' space
 robot.space = 'joint';
 % robot.space = 'task';
 
@@ -16,61 +18,51 @@ robot = model_from_rtb(robot);
 
 %% simulation
 % init state
-state.q = deg2rad([0, 90, -90, 0, 0, 0]');
-state.q_dot = zeros(n,1);
+x(1:n,1) = deg2rad([0, 90, -90, 0, 0, 0]');   % q
+x(n+1:2*n,1) = zeros(n,1);                    % q_dot
 if strcmp(robot.model, 'flexible')
-    state.theta = zeros(n,1);
-    state.theta_dot = zeros(n,1);
+    x(2*n+1:3*n,1) = zeros(n,1);              % th
+    x(3*n+1:4*n,1) = zeros(n,1);              % th_dot
 end
-tau_ext = zeros(n,1);
+robot.tau_ext = zeros(n,1);
 
 % time
-t = 0;
 dt = 0.001;
 robot.dt = dt;
-t_total = 10;
 
-target.q = deg2rad([0, 90, 0, 0, 90, 0]');
-target.q_dot = zeros(n,1);
-target.t = t + 0.1;
+robot.target.qi = x(1:n);
+robot.target.qf = deg2rad([0, 90, 0, 0, 90, 0]');
+robot.target.ti = 0;
+robot.target.tf = robot.target.ti + 5;
 
-T = [];
-Q = [];
+% set trajectory and control function
+robot.traj = @traj_min_jerk;
+robot.control = @control_rigid_passivity;
+% robot.control = @control_computed_torque;
 
-% trajectory
-[Q_des, QD_des, QDD_des]= mtraj(@tpoly, state.q', target.q', (target.t - t)/dt);
-i = 1;
-while i <= size(Q_des,1)
-    state_des.q = Q_des(i,:)';
-    state_des.q_dot = QD_des(i,:)';
-    state_des.q_ddot = QDD_des(i,:)';
-    
-    % control
-%     tau_m = zeros(n,1); % zero torque
-    tau_m = control_rigid_passivity(robot, state, state_des, tau_ext);
-    
-    % forward dynamics
-    state = fdyn(robot, state, tau_m, tau_ext);
-    
-    T = [T t];
-    Q = [Q; state.q'];
-        
-    i = i+1;
-    t = t + dt;
-end
+tic()
+[T, X] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
+toc()
 
 % animation
 figure(1)
-for i=1:length(T)
-    q = Q(i,:);
+for i=1:round(length(T)/100):length(T)
+    q = X(i,1:n);
     robot.rtb.plot(q)   
+    drawnow
 end
 
-% [to do] data plot
+% data plot
 figure(2)
+% re-calculate trajectory to plot
+X_des = [];
+for i=1:length(T)
+    X_des = [X_des; robot.traj(robot, T(i))'];
+end
+
 for i=1:n
     subplot(n, 1, i)
-    plot(T', rad2deg(Q_des(:,i)), 'b')
+    plot(T', rad2deg(X_des(:,i)), 'b')
     hold on
-    plot(T', rad2deg(Q(:,i)), 'r')
+    plot(T', rad2deg(X(:,i)), 'r')
 end
