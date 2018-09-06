@@ -26,12 +26,17 @@ end
 % trajectory
 x_des = robot.traj(robot,t);
 
+
+
 % actuator torque
 if strcmp(robot.model, 'rigid')
     tau_a = robot.control(robot, x, x_des);
 elseif strcmp(robot.model, 'flexible')
     tau_a = K*(theta - q) + D*(theta_dot - q_dot);
 end
+
+% external torque
+%robot.tau_ext = robot.rtb.jacob0(q)'*[5*sin(2*t);0;0;0;0;0];  % disturbance
 tau_ext = robot.tau_ext;
 
 % link dynamics

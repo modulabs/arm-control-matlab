@@ -44,25 +44,51 @@ tic()
 [T, X] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
 toc()
 
-% animation
-figure(1)
+%% animation
+figure,
 for i=1:round(length(T)/100):length(T)
     q = X(i,1:n);
     robot.rtb.plot(q)   
     drawnow
 end
 
-% data plot
-figure(2)
+%% data plot
+figure,
 % re-calculate trajectory to plot
 X_des = [];
 for i=1:length(T)
     X_des = [X_des; robot.traj(robot, T(i))'];
 end
-
+h = []
 for i=1:n
-    subplot(n, 1, i)
+    h = [h subplot(n, 1, i)]
     plot(T', rad2deg(X_des(:,i)), 'b')
     hold on
     plot(T', rad2deg(X(:,i)), 'r')
 end
+grid on
+
+figure
+for i=1:n
+    h = [h subplot(n, 1, i)];
+    plot(T', rad2deg(X_des(:,i+6)), 'b')
+    hold on
+    plot(T', rad2deg(X(:,i+6)), 'r')
+end
+grid on
+
+% torque, not yet plotted
+% figure,
+% for i=1:n
+% end
+
+figure,
+for i=1:n
+    h = [h, subplot(n, 1, i)];
+    plot(T', rad2deg(X(:,i) - X_des(:,i)), 'b')
+    hold on
+end
+grid on
+
+linkaxes(h, 'x')
+    

@@ -5,7 +5,7 @@ persistent q_int
 n = robot.rtb.n;
 Kp = diag([100, 100, 100, 100, 100, 100]);
 Kd = diag([20, 20, 20, 20, 20, 20]);
-Ki = diag([0, 0, 0, 0, 0, 0]);
+Ki = diag([2, 2, 2, 2, 2, 2]);
 q_int_max = 10000*ones(n,1);
 q_int_min = -q_int_max;
 
