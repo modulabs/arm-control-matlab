@@ -40,8 +40,8 @@ robot.control = @control_rigid_passivity;
 % robot.control = @control_computed_torque;
 
 tic()
-while robot.target.ti + t < robot.target_tf
-    [T, X] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
+% while robot.target.ti + t < robot.target_tf
+[T, X] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
 toc()
 
 %% animation

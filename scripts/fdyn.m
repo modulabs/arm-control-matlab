@@ -1,7 +1,6 @@
 function [x] = fdyn(robot, t, x)
 
 n = robot.rtb.n;
-dt = robot.dt;
 
 B = robot.B;
 G = robot.G;
