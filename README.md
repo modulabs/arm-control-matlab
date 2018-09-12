@@ -7,7 +7,7 @@
 - Peter Corke's Robotics Toolbox
 
 ## Run
-1. Edit main.m
+1. Edit or Create your own test_*.m
  - Select model between 'rigid' and 'flexible'
  ```matlab
  % joint model: select between 'rigid' and 'joint'
@@ -29,4 +29,4 @@
  robot.control = @control_rigid_passivity;
  ```
 
-3. Run main.m
+3. Run test_*.m
