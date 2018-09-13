@@ -35,7 +35,7 @@ elseif strcmp(robot.model, 'flexible')
 end
 
 % external torque
-%robot.tau_ext = robot.rtb.jacob0(q)'*[5*sin(2*t);0;0;0;0;0];  % disturbance
+% robot.tau_ext = robot.rtb.jacob0(q)'*[5*sin(2*t);0;0;0;0;0];  % disturbance
 tau_ext = robot.tau_ext;
 
 % link dynamics

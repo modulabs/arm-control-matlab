@@ -2,6 +2,14 @@ clear;
 clc;
 close all;
 
+addpath('control', 'trajectory') 
+
+video = true;
+if video
+  video_writer = VideoWriter('test_rigid_passivity.avi', 'Uncompressed AVI');
+  open(video_writer);
+end
+
 %% modeling
 mdl_puma560;
 robot.rtb = p560;
@@ -40,16 +48,21 @@ robot.control = @control_rigid_passivity;
 % robot.control = @control_computed_torque;
 
 tic()
-% while robot.target.ti + t < robot.target_tf
-[T, X] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
+[T X ] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
 toc()
 
 %% animation
-figure,
+h = figure;
 for i=1:round(length(T)/100):length(T)
     q = X(i,1:n);
     robot.rtb.plot(q)   
+    if video
+        writeVideo(video_writer, getframe(h));
+    end
     drawnow
+end
+if video
+    close(video_writer);
 end
 
 %% data plot
@@ -59,13 +72,14 @@ X_des = [];
 for i=1:length(T)
     X_des = [X_des; robot.traj(robot, T(i))'];
 end
-h = []
+h = [];
 for i=1:n
-    h = [h subplot(n, 1, i)]
+    h = [h subplot(n, 1, i)];
     plot(T', rad2deg(X_des(:,i)), 'b')
     hold on
     plot(T', rad2deg(X(:,i)), 'r')
 end
+title('q, q_des')
 grid on
 
 figure
@@ -75,20 +89,30 @@ for i=1:n
     hold on
     plot(T', rad2deg(X(:,i+6)), 'r')
 end
+title('qdot, qdot_des')
 grid on
-
+linkaxes(h)
 % torque, not yet plotted
 % figure,
 % for i=1:n
 % end
 
 figure,
+g = [];
 for i=1:n
-    h = [h, subplot(n, 1, i)];
+    g = [g, subplot(n, 1, i)];
     plot(T', rad2deg(X(:,i) - X_des(:,i)), 'b')
     hold on
 end
+title('q error(deg)')
 grid on
 
-linkaxes(h, 'x')
-    
+figure,
+for i=1:n
+    g = [g, subplot(n, 1, i)];
+    plot(T', rad2deg(X(:,i+6) - X_des(:,i+6)), 'b')
+    hold on
+end
+title('qdot error(deg)')
+grid on
+linkaxes(g)
