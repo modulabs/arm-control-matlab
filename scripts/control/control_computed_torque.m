@@ -1,4 +1,4 @@
-function tau_m = control_rigid_passivity(robot, x, x_des)
+function tau_m = control_computed_torque(robot, x_des, x)
 
 persistent q_int
 

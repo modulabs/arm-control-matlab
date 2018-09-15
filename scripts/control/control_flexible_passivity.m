@@ -1,0 +1,1 @@
+function tau_m = control_flexible_passivity(robot, x_des, x)

@@ -1,4 +1,4 @@
-function [x] = fdyn(robot, t, x)
+function [x, robot] = fdyn(robot, t, x)
 
 n = robot.rtb.n;
 
@@ -25,11 +25,9 @@ end
 % trajectory
 x_des = robot.traj(robot,t);
 
-
-
 % actuator torque
 if strcmp(robot.model, 'rigid')
-    tau_a = robot.control(robot, x, x_des);
+    tau_a = robot.control(robot, x_des, x);
 elseif strcmp(robot.model, 'flexible')
     tau_a = K*(theta - q) + D*(theta_dot - q_dot);
 end
@@ -43,7 +41,8 @@ q_ddot = accel(robot.rtb, q', q_dot', tau_a' + tau_ext' );
 
 % motor dynamics
 if strcmp(robot.model, 'flexible')
-    tau_m = robot.control(robot, x, x_des);
+    tau_m = robot.control(robot, x_des, x);
+    TAU = [TAU; tau_m'];
     theta_ddot = inv(G*G*B)*(-tau_a + tau_m);
 end
 
