@@ -1,10 +1,10 @@
 %%
 video = true;
 if video
-  video_writer = VideoWriter('friction.mp4', 'MPEG-4');
+  video_writer = VideoWriter('disturb.mp4', 'MPEG-4');
   open(video_writer);
 end
-fig_name = 'friction';
+fig_name = 'disturb';
 
 %% modeling
 mdl_puma560;
@@ -44,6 +44,8 @@ robot.target.tf = robot.target.ti + 2;
 robot.traj = @traj_min_jerk;
 robot.control = @control_rigid_passivity;
 % robot.control = @control_computed_torque;
+% robot.tau_ext = @tau_ext_zero;
+robot.tau_ext = @tau_ext_disturb;
 
 tic()
 [T X ] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
