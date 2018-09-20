@@ -1,15 +1,16 @@
-function [x, robot] = fdyn(robot, t, x)
+function [x_dot, robot] = fdyn(robot, t, x, tau, tau_ext)
 
 n = robot.rtb.n;
 
-B = robot.B;
-G = robot.G;
 
-if strcmp(robot.model, 'rigid')
-    for i=1:n
-        robot.rtb.links(i).Jm = robot.B(i,i);
-    end
-elseif strcmp(robot.model, 'flexible')
+
+% if strcmp(robot.model, 'rigid')
+%     for i=1:n
+%         robot.rtb.links(i).Jm = robot.B(i,i);
+%     end
+if strcmp(robot.model, 'flexible')
+    B = robot.B;
+    G = robot.G;
     K = robot.K;
     D = robot.D;
 end
@@ -22,18 +23,18 @@ if strcmp(robot.model, 'flexible')
     theta_dot = x(3*n+1:4*n);
 end
 
-% trajectory
-x_des = robot.traj(robot,t);
+% % trajectory
+% x_des = robot.traj(robot,t);
 
 % actuator torque
 if strcmp(robot.model, 'rigid')
-    tau_a = robot.control(robot, x_des, x);
+    tau_a = tau; %robot.control(robot, x_des, x);
 elseif strcmp(robot.model, 'flexible')
     tau_a = K*(theta - q) + D*(theta_dot - q_dot);
 end
 
-% external torque
-tau_ext = robot.tau_ext(robot, t, x, zeros(2*n,1));
+% % external torque
+% tau_ext = robot.tau_ext(robot, t, x, zeros(2*n,1));
 
 % link dynamics
 q_ddot = accel(robot.rtb, q', q_dot', tau_a' + tau_ext' );
@@ -46,9 +47,9 @@ if strcmp(robot.model, 'flexible')
 end
 
 % output
-x(1:n) = q_dot;
-x(n+1:2*n) = q_ddot;
+x_dot(1:n,1) = q_dot;
+x_dot(n+1:2*n,1) = q_ddot;
 if strcmp(robot.model, 'flexible')
-    x(2*n+1: 3*n) = theta_dot;
-    x(3*n+1: 4*n) = theta_ddot;
+    x_dot(2*n+1: 3*n,1) = theta_dot;
+    x_dot(3*n+1: 4*n,1) = theta_ddot;
 end

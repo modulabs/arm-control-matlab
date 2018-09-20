@@ -24,31 +24,53 @@ robot = model_from_rtb(robot);
 % init state
 x(1:n,1) = deg2rad([60, 150, 60, 60, 150, 60]');   % q
 x(n+1:2*n,1) = zeros(n,1);                    % q_dot
+x_des = [x; zeros(n,1)];                      % init desired state including acceleration
 if strcmp(robot.model, 'flexible')
     x(2*n+1:3*n,1) = zeros(n,1);              % th
     x(3*n+1:4*n,1) = zeros(n,1);              % th_dot
 end
-robot.tau_ext = zeros(n,1);
-X_des = [];
+tau = zeros(n,1);   tau_ext = zeros(n,1);
+
+% save
+T = [];
+X = [];     X_des = [];
 TAU = [];
 
-% time
-dt = 0.001;
-
-robot.target.qi = x(1:n);
-robot.target.qf = deg2rad([-60, 60, -30, -60, 60, -60]');
-robot.target.ti = 0;
-robot.target.tf = robot.target.ti + 2;
-
 % set trajectory and control function
-robot.traj = @traj_min_jerk;
-robot.control = @control_rigid_passivity;
+robot.target.qi = x(1:n,1);
+robot.target.qf = deg2rad([-60, 60, -30, -60, 60, -60]');
+robot.target.ti = 1;
+robot.target.tf = 4;
+t = 0; tf = 5; dt = 0.001;
+
+traj_func = @traj_min_jerk;    
+control_func = @control_rigid_passivity;
 % robot.control = @control_computed_torque;
-% robot.tau_ext = @tau_ext_zero;
-robot.tau_ext = @tau_ext_disturb;
+% tau_ext_func = @tau_ext_zero;
+tau_ext_func = @tau_ext_disturb;
 
 tic()
-[T X ] = ode45(@(t,x) fdyn(robot, t, x), [robot.target.ti, robot.target.tf], x);
+while t <= tf
+    % save
+    T = [T; t];
+    X = [X; x'];
+    X_des = [X_des; x_des'];
+    TAU = [TAU; tau'];
+    
+    % trajectory
+    x_des = traj_func(robot, t);
+    
+    % control
+    tau = control_func(robot, x_des, x);
+    
+    % external torque
+    tau_ext = tau_ext_func(robot, t, x, zeros(2*n,1));
+        
+    % forward dynamics using simple euler integration (ode45 is too slow)
+    x_dot = fdyn(robot, t, x, tau, tau_ext);
+    x = x + x_dot*dt;
+    t = t + dt;
+end
 toc()
 
 %% animation
@@ -66,17 +88,6 @@ if video
 end
 
 %% data plot
-% re-calculate trajectory to plot
-X_des = [];
-for i=1:length(T)
-    X_des = [X_des; robot.traj(robot, T(i))'];
-end
-% re-calculate torque to plot
-TAU = [];
-for i=1:length(T)
-    TAU = [TAU; robot.control(robot, X_des(i,:)', X(i,:)')'];
-end
-
 % q, q_des
 figure,
 f = []; g = [];

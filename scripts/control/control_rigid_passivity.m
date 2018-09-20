@@ -18,7 +18,7 @@ q_ddot_ref = q_ddot_des + Lambda *q_dot_tilda;
 q_dot_ref = q_dot_des + Lambda * q_tilda;
 
 % dynamics with virtual reference trajectory
-Mq_Cq_g = rne_dh_(robot.rtb, q', q_dot', q_dot_ref', q_ddot_ref')';
+Mq_Cq_g = rne_modified_dh(robot.rtb, q', q_dot', q_dot_ref', q_ddot_ref')';
 % M = robot.rtb.inertia(q');
 % C = robot.rtb.coriolis(q', q_dot');
 % g = robot.rtb.gravload(q')';

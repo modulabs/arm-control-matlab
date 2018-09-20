@@ -23,21 +23,21 @@ M = robot.rtb.inertia(q');
 % compare C matrix
 C = robot.rtb.coriolis(q', qd')
 C_ = zeros(robot.rtb.n);
-g = rne_dh_(robot.rtb, q', zeros(1,n), zeros(1,n), zeros(1,n));
+g = rne_modified_dh(robot.rtb, q', zeros(1,n), zeros(1,n), zeros(1,n));
 for i=1:robot.rtb.n
     unit_qd = zeros(robot.rtb.n,1);
     unit_qd(i) = 1;
-    C_(:,i) = rne_dh_(robot.rtb, q', qd', unit_qd', zeros(1,n)) - g; 
+    C_(:,i) = rne_modified_dh(robot.rtb, q', qd', unit_qd', zeros(1,n)) - g; 
 end
 C_
 
 % compare C(q,qd)*qd 
 Cq = (C*qd)'
 Cq_ = rne_dh(robot.rtb, q', qd', zeros(1,n)) - rne_dh(robot.rtb, q', zeros(1,n), zeros(1,n))
-Cq__ = rne_dh_(robot.rtb, q', qd', qd', zeros(1,n) ) ...
-    - rne_dh_(robot.rtb, q', zeros(1,n), zeros(1,n), zeros(1,n))
+Cq__ = rne_modified_dh(robot.rtb, q', qd', qd', zeros(1,n) ) ...
+    - rne_modified_dh(robot.rtb, q', zeros(1,n), zeros(1,n), zeros(1,n))
 
 % compare C(q,qd)*qda
 Cqa = (C*qda)'
-Cqa__ = rne_dh_(robot.rtb, q', qd', qda', zeros(1,n) ) - g
+Cqa__ = rne_modified_dh(robot.rtb, q', qd', qda', zeros(1,n) ) - g
 
