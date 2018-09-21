@@ -1,9 +1,9 @@
 function tau_m = control_rigid_passivity(robot, x_des, x)
 
 n = robot.rtb.n;
-Kp = diag([900, 1200, 1000, 500, 500, 500]);
+Kp = diag([1200, 1200, 2200, 500, 500, 500]);
 Kd = diag([20, 20, 20, 20, 20, 20]);
-Lambda = diag([60, 120, 100, 10, 10, 10]);
+Lambda = diag([120, 120, 220, 10, 10, 10]);
 
 q = x(1:n);
 q_dot = x(n+1:2*n);
