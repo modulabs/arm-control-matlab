@@ -2,14 +2,8 @@ function [x_dot, robot] = fdyn(robot, t, x, tau, tau_ext)
 
 n = robot.rtb.n;
 
-
-
-% if strcmp(robot.model, 'rigid')
-%     for i=1:n
-%         robot.rtb.links(i).Jm = robot.B(i,i);
-%     end
 if strcmp(robot.model, 'flexible')
-    B = robot.B;
+    Jm = robot.Jm;
     G = robot.G;
     K = robot.K;
     D = robot.D;
@@ -43,7 +37,7 @@ q_ddot = accel(robot.rtb, q', q_dot', tau_a' + tau_ext' );
 if strcmp(robot.model, 'flexible')
     tau_m = robot.control(robot, x_des, x);
     TAU = [TAU; tau_m'];
-    theta_ddot = inv(G*G*B)*(-tau_a + tau_m);
+    theta_ddot = inv(G*G*Jm)*(-tau_a + tau_m);
 end
 
 % output
